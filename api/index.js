@@ -6,7 +6,7 @@ const app = express();
 app.use(cors());
 
 // Replace with your GitHub Personal Access Token
-const GITHUB_TOKEN = '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'; 
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN; 
 
 app.get('/api/pinned-repos', async (req, res) => {
   try {
