@@ -7,7 +7,7 @@ app.use(cors());
 
 app.get('/api/pinned-repos', async (req, res) => {
   try {
-    const response = await axios.get('https://api.github.com/users/your_username/repos', {
+    const response = await axios.get('https://api.github.com/users/RISSCoding/repos', {
       headers: { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` },
     });
     const pinnedRepos = response.data.filter(repo => repo.topics.includes('pinned'));
