@@ -6,14 +6,14 @@ const app = express();
 app.use(cors());
 
 // Replace with your GitHub Personal Access Token
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN; 
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
 app.get('/api/pinned-repos', async (req, res) => {
   try {
     // GitHub GraphQL API endpoint
     const graphqlEndpoint = 'https://api.github.com/graphql';
 
-    // GraphQL query to fetch pinned repositories
+    // GraphQL query to fetch pinned repositories and their languages
     const query = `
       query {
         user(login: "RISSCoding") {
@@ -25,6 +25,9 @@ app.get('/api/pinned-repos', async (req, res) => {
                   description
                   stargazerCount
                   url
+                  primaryLanguage {
+                    name
+                  }
                 }
               }
             }
@@ -46,12 +49,13 @@ app.get('/api/pinned-repos', async (req, res) => {
       { headers }
     );
 
-    // Extract pinned repositories data
+    // Extract pinned repositories data including language
     const pinnedRepos = response.data.data.user.pinnedItems.edges.map(item => ({
       name: item.node.name,
       description: item.node.description,
       stars: item.node.stargazerCount,
       link: item.node.url,
+      language: item.node.primaryLanguage ? item.node.primaryLanguage.name : 'Unknown',
     }));
 
     // Return the pinned repositories data
