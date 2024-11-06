@@ -5,15 +5,32 @@ const axios = require('axios');
 const app = express();
 app.use(cors());
 
-// Replace with your GitHub Personal Access Token
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+// GITHUB_TOKEN is a secret token used to access the GitHub API
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN; 
+
+// A mapping of languages to colors
+const languageColors = {
+  JavaScript: '#F1E05A',
+  TypeScript: '#2F74C0',
+  Python: '#3572A5',
+  Java: '#B07219',
+  Ruby: '#701516',
+  Go: '#00ADD8',
+  PHP: '#4F5D95',
+  C: '#555555',
+  CSharp: '#178600',
+  Swift: '#F05138',
+  Kotlin: '#F6A50F',
+  Rust: '#000000',
+  HTML: '#E44D26',
+  CSS: '#563D7C',
+  Dart: '#00B4AB',
+  // Add more languages here
+};
 
 app.get('/api/pinned-repos', async (req, res) => {
   try {
-    // GitHub GraphQL API endpoint
     const graphqlEndpoint = 'https://api.github.com/graphql';
-
-    // GraphQL query to fetch pinned repositories and their languages
     const query = `
       query {
         user(login: "RISSCoding") {
@@ -36,29 +53,27 @@ app.get('/api/pinned-repos', async (req, res) => {
       }
     `;
 
-    // Request headers
     const headers = {
       Authorization: `Bearer ${GITHUB_TOKEN}`,
       'Content-Type': 'application/json',
     };
 
-    // Make the request to GitHub's GraphQL API
-    const response = await axios.post(
-      graphqlEndpoint,
-      { query },
-      { headers }
-    );
+    const response = await axios.post(graphqlEndpoint, { query }, { headers });
 
-    // Extract pinned repositories data including language
-    const pinnedRepos = response.data.data.user.pinnedItems.edges.map(item => ({
-      name: item.node.name,
-      description: item.node.description,
-      stars: item.node.stargazerCount,
-      link: item.node.url,
-      language: item.node.primaryLanguage ? item.node.primaryLanguage.name : 'Unknown',
-    }));
+    const pinnedRepos = response.data.data.user.pinnedItems.edges.map(item => {
+      const language = item.node.primaryLanguage ? item.node.primaryLanguage.name : 'Unknown';
+      const languageColor = languageColors[language] || '#808080'; // Default to gray if no color found
 
-    // Return the pinned repositories data
+      return {
+        name: item.node.name,
+        description: item.node.description,
+        stars: item.node.stargazerCount,
+        link: item.node.url,
+        language: language,
+        languageColor: languageColor, // Add language color
+      };
+    });
+
     res.json(pinnedRepos);
   } catch (error) {
     console.error('Error fetching pinned repos:', error.message);
